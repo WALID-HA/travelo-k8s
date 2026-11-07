@@ -25,3 +25,23 @@ Cluster : Kubernetes intégré à Docker Desktop (Settings → Kubernetes → En
     kubectl apply -f .
 
 Fichier `hosts` : `127.0.0.1 frontend.exam.local backend.exam.local`, puis http://frontend.exam.local
+
+## Bonus A : base de données gérée par un Operator (`operator/`)
+
+MySQL Operator for Kubernetes (Oracle) : un `InnoDBCluster` de 3 serveurs MySQL (Group Replication) + MySQL Router remplace le StatefulSet.
+
+    helm repo add mysql-operator https://mysql.github.io/mysql-operator/
+    helm install mysql-operator mysql-operator/mysql-operator -n mysql-operator --create-namespace
+    kubectl delete -f 04-database.yaml
+    kubectl apply -f operator/
+
+## Bonus B : Skaffold (`skaffold.yaml`)
+
+Construit les images depuis le code source du Devoir 1, les pousse sur Docker Hub et redéploie à chaque modification :
+
+    skaffold dev --cleanup=false
+
+## Bonus C : chart Helm (`helm/travelo`, publié dans `charts/`)
+
+    helm repo add travelo https://raw.githubusercontent.com/WALID-HA/travelo-k8s/main/charts
+    helm install travelo travelo/travelo -n helm --create-namespace

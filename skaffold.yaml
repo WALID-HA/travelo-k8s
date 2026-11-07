@@ -1,0 +1,32 @@
+# Bonus B : Skaffold surveille le code source, reconstruit les images Docker,
+# les pousse sur Docker Hub et redéploie les manifests dans le cluster, à chaque modification.
+#   skaffold dev --cleanup=false     (boucle de développement continue)
+#   skaffold run                     (un seul build + déploiement)
+apiVersion: skaffold/v4beta14
+kind: Config
+metadata:
+  name: travelo
+build:
+  # tag = empreinte des fichiers sources : nouvelle image seulement si le code change
+  tagPolicy:
+    inputDigest: {}
+  local:
+    push: true          # pousse les images construites sur Docker Hub (compte vvalid)
+    useBuildkit: true
+  artifacts:
+    # Code source et Dockerfiles du Devoir 1
+    - image: vvalid/travelo-frontend
+      context: ../../DL/travelo-app/travelo_frontend
+      docker:
+        dockerfile: Dockerfile
+    - image: vvalid/travelo-backend
+      context: ../../DL/travelo-app/travelo_backend
+      docker:
+        dockerfile: Dockerfile
+manifests:
+  # Les manifests du namespace travelo ; Skaffold y remplace les images par celles qu'il vient de construire
+  rawYaml:
+    - 0*.yaml
+deploy:
+  kubectl: {}
+  statusCheckDeadlineSeconds: 600

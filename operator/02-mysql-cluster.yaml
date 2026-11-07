@@ -1,0 +1,39 @@
+# Bonus A : la base de données gérée par un Operator (MySQL Operator for Kubernetes, Oracle).
+# Prérequis : helm install mysql-operator mysql-operator/mysql-operator -n mysql-operator --create-namespace
+#
+# Compte administrateur du cluster (lu par l'Operator)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: travelo-mysql-root
+  namespace: travelo
+type: Opaque
+stringData:
+  rootUser: root
+  rootHost: "%"
+  rootPassword: chaima2003
+---
+# Ressource personnalisée (CRD) : on décrit le cluster voulu, l'Operator le crée et le maintient.
+# Nom "travelo-database" : le Service du routeur porte ce nom, donc l'URL JDBC du backend ne change pas.
+apiVersion: mysql.oracle.com/v2
+kind: InnoDBCluster
+metadata:
+  name: travelo-database
+  namespace: travelo
+spec:
+  secretName: travelo-mysql-root
+  tlsUseSelfSigned: true
+  instances: 3                 # 3 serveurs MySQL en Group Replication (1 primaire + 2 secondaires)
+  router:
+    instances: 1               # MySQL Router : envoie les connexions vers le primaire
+  datadirVolumeClaimTemplate:
+    accessModes: ["ReadWriteOnce"]
+    resources:
+      requests:
+        storage: 1Gi
+  podSpec:
+    containers:
+      - name: mysql
+        resources:
+          requests: { cpu: 250m, memory: 512Mi }
+          limits: { cpu: "1", memory: 1Gi }

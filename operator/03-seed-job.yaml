@@ -1,0 +1,38 @@
+# Bonus A : charge les données de démo dans le cluster, une seule fois, quand il est prêt.
+# (InnoDBCluster ne lit pas /docker-entrypoint-initdb.d : on passe par un Job Kubernetes)
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: travelo-db-seed
+  namespace: travelo
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: seed
+          image: mysql:8.4
+          env:
+            - name: MYSQL_PWD
+              valueFrom: { secretKeyRef: { name: travelo-db-secret, key: MYSQL_ROOT_PASSWORD } }
+          command:
+            - sh
+            - -c
+            - |
+              until mysql -h travelo-database -uroot -e 'SELECT 1' >/dev/null 2>&1; do
+                echo "attente du cluster MySQL..."; sleep 5
+              done
+              mysql -h travelo-database -uroot -e 'CREATE DATABASE IF NOT EXISTS travelo_db'
+              mysql -h travelo-database -uroot travelo_db < /seed/seed.sql
+              mysql -h travelo-database -uroot -e 'SELECT id_flight, departure_city, arrival_city, date FROM travelo_db.flight'
+              echo "données chargées"
+          volumeMounts:
+            - name: seed
+              mountPath: /seed
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 200m, memory: 128Mi }
+      volumes:
+        - name: seed
+          configMap: { name: travelo-db-seed }

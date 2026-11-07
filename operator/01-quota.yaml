@@ -1,0 +1,14 @@
+# Bonus A : un cluster de 3 serveurs MySQL + MySQL Router consomme plus qu'un seul MySQL.
+# On relève donc le quota du namespace (même nom : remplace celui de 01-quotas.yaml).
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: travelo-quota
+  namespace: travelo
+spec:
+  hard:
+    pods: "16"
+    requests.cpu: "4"
+    requests.memory: 5Gi
+    limits.cpu: "10"
+    limits.memory: 10Gi
