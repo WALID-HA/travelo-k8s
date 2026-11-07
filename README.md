@@ -35,11 +35,11 @@ MySQL Operator for Kubernetes (Oracle) : un `InnoDBCluster` de 3 serveurs MySQL 
     kubectl delete -f 04-database.yaml
     kubectl apply -f operator/
 
-## Bonus B : Skaffold (`skaffold.yaml`)
+## Bonus B : Skaffold (`skaffold/skaffold.yaml`)
 
 Construit les images depuis le code source du Devoir 1, les pousse sur Docker Hub et redéploie à chaque modification :
 
-    skaffold dev --cleanup=false
+    skaffold dev -f skaffold/skaffold.yaml --cleanup=false
 
 ## Bonus C : chart Helm (`helm/travelo`, publié dans `charts/`)
 
