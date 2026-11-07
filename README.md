@@ -39,7 +39,8 @@ MySQL Operator for Kubernetes (Oracle) : un `InnoDBCluster` de 3 serveurs MySQL 
 
 Construit les images depuis le code source du Devoir 1, les pousse sur Docker Hub et redéploie à chaque modification :
 
-    skaffold dev -f skaffold/skaffold.yaml --cleanup=false
+    cd skaffold
+    skaffold dev --cleanup=false
 
 ## Bonus C : chart Helm (`helm/travelo`, publié dans `charts/`)
 

@@ -1,7 +1,7 @@
 # Bonus B : Skaffold surveille le code source, reconstruit les images Docker,
 # les pousse sur Docker Hub et redéploie les manifests dans le cluster, à chaque modification.
-#   skaffold dev -f skaffold/skaffold.yaml --cleanup=false     (boucle de développement continue)
-#   skaffold run -f skaffold/skaffold.yaml       (un seul build + déploiement)
+#   cd skaffold ; skaffold dev --cleanup=false     (boucle de développement continue)
+#   cd skaffold ; skaffold run                     (un seul build + déploiement)
 apiVersion: skaffold/v4beta14
 kind: Config
 metadata:
