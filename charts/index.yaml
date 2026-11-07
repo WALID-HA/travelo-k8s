@@ -1,0 +1,23 @@
+apiVersion: v1
+entries:
+  travelo:
+  - apiVersion: v2
+    appVersion: "1.1"
+    created: "2026-11-07T22:44:16.774389Z"
+    description: Application 3-tiers Travelo (React, Spring Boot, MySQL) - chart écrit
+      from scratch (Devoir 2, bonus C)
+    digest: 6e9537750e9018757306d8259215f03ed0ea2e9d5c1182d57934f1533ed1e0dd
+    keywords:
+    - travelo
+    - react
+    - spring-boot
+    - mysql
+    maintainers:
+    - name: Walid HAZZAM
+      url: https://github.com/WALID-HA/travelo-k8s
+    name: travelo
+    type: application
+    urls:
+    - https://raw.githubusercontent.com/WALID-HA/travelo-k8s/main/charts/travelo-1.0.0.tgz
+    version: 1.0.0
+generated: "2026-11-07T22:44:16.7695765Z"

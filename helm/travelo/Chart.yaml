@@ -1,0 +1,10 @@
+apiVersion: v2
+name: travelo
+description: Application 3-tiers Travelo (React, Spring Boot, MySQL) - chart écrit from scratch (Devoir 2, bonus C)
+type: application
+version: 1.0.0
+appVersion: "1.1"
+keywords: [travelo, react, spring-boot, mysql]
+maintainers:
+  - name: Walid HAZZAM
+    url: https://github.com/WALID-HA/travelo-k8s

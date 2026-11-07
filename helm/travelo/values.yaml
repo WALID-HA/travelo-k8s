@@ -1,0 +1,56 @@
+# Valeurs par défaut du chart Travelo (surchargeables avec --set ou -f mon-fichier.yaml)
+
+frontend:
+  image: vvalid/travelo-frontend
+  tag: "1.0"
+  replicas: 2
+  port: 3000
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { cpu: 200m, memory: 128Mi }
+
+backend:
+  image: vvalid/travelo-backend
+  tag: "1.1"
+  replicas: 2
+  port: 8080
+  healthPath: /api/hello
+  resources:
+    requests: { cpu: 250m, memory: 384Mi }
+    limits: { cpu: "1", memory: 768Mi }
+
+database:
+  image: mysql
+  tag: "8.4"
+  name: travelo_db
+  user: root
+  password: chaima2003        # à surcharger : --set database.password=...
+  storage: 1Gi
+  seed: true                  # charge files/seed.sql au 1er démarrage
+  resources:
+    requests: { cpu: 250m, memory: 512Mi }
+    limits: { cpu: "1", memory: 1Gi }
+
+ingress:
+  enabled: true
+  className: nginx
+  # Noms codés dans l'application (fetch du frontend et CORS du backend)
+  frontendHost: frontend.exam.local
+  backendHost: backend.exam.local
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+quota:
+  enabled: true
+  hard:
+    pods: "12"
+    requests.cpu: "3"
+    requests.memory: 3Gi
+    limits.cpu: "6"
+    limits.memory: 6Gi
+
+rbac:
+  enabled: true
+  serviceAccount: travelo-dev

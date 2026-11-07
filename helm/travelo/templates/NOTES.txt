@@ -1,0 +1,7 @@
+Travelo est déployée (release "{{ .Release.Name }}", namespace "{{ .Release.Namespace }}").
+
+  Suivre le démarrage :  kubectl get pods -n {{ .Release.Namespace }} -w
+{{- if .Values.ingress.enabled }}
+  Application :          http://{{ .Values.ingress.frontendHost }}
+  API :                  http://{{ .Values.ingress.backendHost }}{{ .Values.backend.healthPath }}
+{{- end }}

@@ -1,0 +1,25 @@
+{{- if .Values.ingress.enabled }}
+{{- $n := include "travelo.name" . -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $n }}-ingress
+  labels: {{- include "travelo.labels" . | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: {{ .Values.ingress.frontendHost }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: {{ $n }}-frontend, port: { number: {{ .Values.frontend.port }} } }
+    - host: {{ .Values.ingress.backendHost }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: {{ $n }}-backend, port: { number: {{ .Values.backend.port }} } }
+{{- end }}

@@ -1,0 +1,31 @@
+{{- $n := include "travelo.name" . -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $n }}-db-secret
+  labels: {{- include "travelo.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  MYSQL_ROOT_PASSWORD: {{ .Values.database.password | quote }}
+  SPRING_DATASOURCE_PASSWORD: {{ .Values.database.password | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $n }}-config
+  labels: {{- include "travelo.labels" . | nindent 4 }}
+data:
+  MYSQL_DATABASE: {{ .Values.database.name | quote }}
+  SPRING_DATASOURCE_URL: "jdbc:mysql://{{ $n }}-database:3306/{{ .Values.database.name }}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+  SPRING_DATASOURCE_USERNAME: {{ .Values.database.user | quote }}
+{{- if .Values.database.seed }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $n }}-db-seed
+  labels: {{- include "travelo.labels" . | nindent 4 }}
+data:
+  seed.sql: |
+{{ .Files.Get "files/seed.sql" | indent 4 }}
+{{- end }}

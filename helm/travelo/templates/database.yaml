@@ -1,0 +1,69 @@
+{{- $n := include "travelo.name" . -}}
+{{- $ping := "mysqladmin ping -h 127.0.0.1 -uroot -p\"$MYSQL_ROOT_PASSWORD\" --silent" -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $n }}-database
+  labels: {{- include "travelo.labels" . | nindent 4 }}
+spec:
+  clusterIP: None
+  selector: { app: {{ $n }}-database }
+  ports:
+    - name: mysql
+      port: 3306
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $n }}-database
+  labels: {{- include "travelo.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ $n }}-database
+  replicas: 1
+  selector:
+    matchLabels: { app: {{ $n }}-database }
+  template:
+    metadata:
+      labels: { app: {{ $n }}-database, tier: database }
+    spec:
+      containers:
+        - name: mysql
+          image: "{{ .Values.database.image }}:{{ .Values.database.tag }}"
+          ports:
+            - { containerPort: 3306, name: mysql }
+          env:
+            - name: MYSQL_DATABASE
+              valueFrom: { configMapKeyRef: { name: {{ $n }}-config, key: MYSQL_DATABASE } }
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom: { secretKeyRef: { name: {{ $n }}-db-secret, key: MYSQL_ROOT_PASSWORD } }
+          resources: {{- toYaml .Values.database.resources | nindent 12 }}
+          volumeMounts:
+            - { name: data, mountPath: /var/lib/mysql }
+            {{- if .Values.database.seed }}
+            - { name: seed, mountPath: /docker-entrypoint-initdb.d, readOnly: true }
+            {{- end }}
+          startupProbe:
+            exec: { command: ["sh", "-c", {{ $ping | quote }}] }
+            periodSeconds: 5
+            failureThreshold: 36
+          readinessProbe:
+            exec: { command: ["sh", "-c", "mysql -h 127.0.0.1 -uroot -p\"$MYSQL_ROOT_PASSWORD\" -e 'SELECT 1'"] }
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            exec: { command: ["sh", "-c", {{ $ping | quote }}] }
+            periodSeconds: 20
+            timeoutSeconds: 5
+      {{- if .Values.database.seed }}
+      volumes:
+        - name: seed
+          configMap: { name: {{ $n }}-db-seed }
+      {{- end }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.database.storage }}
