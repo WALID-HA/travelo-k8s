@@ -18,9 +18,10 @@ Images : `vvalid/travelo-frontend:1.0`, `vvalid/travelo-backend:1.1` (Docker Hub
 
 ## Déploiement
 
-    minikube start --driver=docker --cpus=4 --memory=4096
-    minikube addons enable ingress
-    kubectl apply -f .
-    minikube tunnel        # dans un 2e terminal
+Cluster : Kubernetes intégré à Docker Desktop (Settings → Kubernetes → Enable Kubernetes).
 
-Fichier `hosts` : `127.0.0.1 frontend.exam.local backend.exam.local`
+    kubectl config use-context docker-desktop
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.12.1/deploy/static/provider/cloud/deploy.yaml
+    kubectl apply -f .
+
+Fichier `hosts` : `127.0.0.1 frontend.exam.local backend.exam.local`, puis http://frontend.exam.local
