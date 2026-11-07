@@ -1,0 +1,37 @@
+# (c) RBAC : un compte "développeur" en lecture seule sur le namespace travelo
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: travelo-dev
+  namespace: travelo
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: travelo-reader
+  namespace: travelo
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "services", "configmaps", "endpoints", "events", "persistentvolumeclaims"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets", "replicasets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses"]
+    verbs: ["get", "list", "watch"]
+  # pas d'accès aux Secrets, ni create / update / delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: travelo-dev-reader
+  namespace: travelo
+subjects:
+  - kind: ServiceAccount
+    name: travelo-dev
+    namespace: travelo
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: travelo-reader

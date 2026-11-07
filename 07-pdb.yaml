@@ -1,0 +1,20 @@
+# (d) Budgets de perturbation : au moins 1 réplica reste disponible pendant un drain / une maintenance
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: travelo-frontend-pdb
+  namespace: travelo
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: { app: travelo-frontend }
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: travelo-backend-pdb
+  namespace: travelo
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: { app: travelo-backend }

@@ -1,0 +1,49 @@
+# Configuration non sensible, partagée par MySQL et le backend
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: travelo-config
+  namespace: travelo
+data:
+  MYSQL_DATABASE: travelo_db
+  SPRING_DATASOURCE_URL: jdbc:mysql://travelo-database:3306/travelo_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+  SPRING_DATASOURCE_USERNAME: root
+---
+# Données de démo : exécutées par MySQL au 1er démarrage (volume vide)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: travelo-db-seed
+  namespace: travelo
+data:
+  seed.sql: |
+    -- Données de démo Travelo (la base est vide au départ).
+    -- Crée les tables si besoin : au 1er démarrage, MySQL exécute ce script AVANT que Spring les crée.
+
+    CREATE TABLE IF NOT EXISTS flight (
+      id_flight INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      arrival_airport VARCHAR(255), arrival_city VARCHAR(255), arrival_time TIME(6),
+      company VARCHAR(255), date DATETIME(6), departure_airport VARCHAR(255),
+      departure_city VARCHAR(255), departure_time TIME(6), price DECIMAL(38,2)
+    );
+
+    CREATE TABLE IF NOT EXISTS seats (
+      id INT NOT NULL PRIMARY KEY,
+      a1 VARCHAR(255), b1 VARCHAR(255), c1 VARCHAR(255), d1 VARCHAR(255), a2 VARCHAR(255), b2 VARCHAR(255), c2 VARCHAR(255), d2 VARCHAR(255), a3 VARCHAR(255), b3 VARCHAR(255), c3 VARCHAR(255), d3 VARCHAR(255), a4 VARCHAR(255), b4 VARCHAR(255), c4 VARCHAR(255), d4 VARCHAR(255), a5 VARCHAR(255), b5 VARCHAR(255), c5 VARCHAR(255), d5 VARCHAR(255), a6 VARCHAR(255), b6 VARCHAR(255), c6 VARCHAR(255), d6 VARCHAR(255), a7 VARCHAR(255), b7 VARCHAR(255), c7 VARCHAR(255), d7 VARCHAR(255), a8 VARCHAR(255), b8 VARCHAR(255), c8 VARCHAR(255), d8 VARCHAR(255), a9 VARCHAR(255), b9 VARCHAR(255), c9 VARCHAR(255), d9 VARCHAR(255),
+      id_flight INT UNIQUE
+    );
+
+    INSERT IGNORE INTO flight VALUES
+      (1, 'CDG', 'Paris',      '11:30:00', 'Royal Air Maroc', '2026-11-15 00:00:00', 'CMN', 'Casablanca', '08:00:00', 1450.00),
+      (2, 'ORY', 'Paris',      '17:45:00', 'Air Arabia',      '2026-11-15 00:00:00', 'CMN', 'Casablanca', '14:20:00',  990.00),
+      (3, 'CMN', 'Casablanca', '12:10:00', 'Royal Air Maroc', '2026-11-22 00:00:00', 'CDG', 'Paris',      '09:00:00', 1520.00),
+      (4, 'MAD', 'Madrid',     '10:15:00', 'Iberia',          '2026-11-15 00:00:00', 'RBA', 'Rabat',      '08:30:00',  870.00),
+      (5, 'RBA', 'Rabat',      '20:05:00', 'Iberia',          '2026-11-22 00:00:00', 'MAD', 'Madrid',     '18:20:00',  910.00);
+
+    -- Une ligne de sièges par vol (seats.id = id du vol) : 'empty' ou 'taken'
+    INSERT IGNORE INTO seats (id, id_flight, a1, b1, c1, d1, a2, b2, c2, d2, a3, b3, c3, d3, a4, b4, c4, d4, a5, b5, c5, d5, a6, b6, c6, d6, a7, b7, c7, d7, a8, b8, c8, d8, a9, b9, c9, d9) VALUES
+      (1, 1, 'empty', 'taken', 'empty', 'empty', 'empty', 'empty', 'taken', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'taken', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'),
+      (2, 2, 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'taken', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'),
+      (3, 3, 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'),
+      (4, 4, 'taken', 'taken', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'),
+      (5, 5, 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty');

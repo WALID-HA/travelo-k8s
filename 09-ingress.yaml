@@ -1,0 +1,23 @@
+# (f) Ingress : accès par nom de domaine (mêmes noms que ceux codés dans l'application)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: travelo-ingress
+  namespace: travelo
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: frontend.exam.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: travelo-frontend, port: { number: 3000 } }
+    - host: backend.exam.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: travelo-backend, port: { number: 8080 } }

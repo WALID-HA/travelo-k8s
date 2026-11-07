@@ -1,0 +1,77 @@
+# Service headless : nom DNS stable "travelo-database" (celui codé dans application.properties)
+apiVersion: v1
+kind: Service
+metadata:
+  name: travelo-database
+  namespace: travelo
+  labels: { app: travelo-database }
+spec:
+  clusterIP: None
+  selector: { app: travelo-database }
+  ports:
+    - name: mysql
+      port: 3306
+---
+# StatefulSet : identité stable (travelo-database-0) + un volume persistant par réplique
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: travelo-database
+  namespace: travelo
+spec:
+  serviceName: travelo-database
+  replicas: 1
+  selector:
+    matchLabels: { app: travelo-database }
+  template:
+    metadata:
+      labels: { app: travelo-database, tier: database }
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.4
+          ports:
+            - containerPort: 3306
+              name: mysql
+          env:
+            - name: MYSQL_DATABASE
+              valueFrom: { configMapKeyRef: { name: travelo-config, key: MYSQL_DATABASE } }
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom: { secretKeyRef: { name: travelo-db-secret, key: MYSQL_ROOT_PASSWORD } }
+          resources:
+            requests: { cpu: 250m, memory: 512Mi }
+            limits: { cpu: "1", memory: 1Gi }
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+            - name: seed
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+          # (e) Sondes
+          startupProbe:          # laisse jusqu'à 3 min à MySQL pour s'initialiser
+            exec:
+              command: ["sh", "-c", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$MYSQL_ROOT_PASSWORD\" --silent"]
+            periodSeconds: 5
+            failureThreshold: 36
+          readinessProbe:        # reçoit du trafic seulement s'il répond à une requête SQL
+            exec:
+              command: ["sh", "-c", "mysql -h 127.0.0.1 -uroot -p\"$MYSQL_ROOT_PASSWORD\" -e 'SELECT 1'"]
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:         # redémarré s'il ne répond plus
+            exec:
+              command: ["sh", "-c", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$MYSQL_ROOT_PASSWORD\" --silent"]
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: seed
+          configMap: { name: travelo-db-seed }
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
